@@ -7,3 +7,4 @@ require('@angular/localize/init');
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
+/**/
