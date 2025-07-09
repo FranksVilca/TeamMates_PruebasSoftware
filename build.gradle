@@ -37,6 +37,7 @@ configurations {
     liquibaseRuntime.extendsFrom testImplementation
 }
 
+
 // See https://github.com/checkstyle/checkstyle/issues/14211#issuecomment-1884129948
 configurations.all {
     resolutionStrategy.capabilitiesResolution.withCapability("com.google.collections:google-collections") {
@@ -728,19 +729,34 @@ jacoco {
     toolVersion = jacocoVersion
 }
 
-task jacocoReport(type: JacocoReport) {
-    description "Runs coverage session from available test run data."
-    group "Test"
-    sourceDirectories.from files(sourceSets.main.java.srcDirs)
-    classDirectories.from files(sourceSets.main.output)
-    executionData fileTree("${buildDir}/jacoco").files
+// Habilita JaCoCo para las tareas unitTests, integrationTests, etc.
+tasks.withType(Test).configureEach {
+    jacoco.includeNoLocationClasses = true
+    finalizedBy jacocoTestReport // asegura que se generen reportes luego de los tests
+}
+
+// Ajusta jacocoTestReport para que use los .exec generados por todas las tareas de test
+jacocoTestReport {
+    dependsOn unitTests, integrationTests // Agrega aquí las tareas que uses realmente
+
     reports {
         xml.required = true
+        xml.outputLocation = file("$buildDir/reports/jacoco/test/jacoco.xml")
         html.required = true
     }
-    afterEvaluate {
-        classDirectories.from files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: ["**/*.jar"])
-        })
+
+    executionData fileTree(dir: "$buildDir", includes: [
+        "jacoco/test.exec",
+        "jacoco/unitTests.exec",
+        "jacoco/integrationTests.exec"
+    ])
+}
+
+sonarqube {
+    properties {
+        // Ruta donde están los resultados de los tests (JUnit)
+        property "sonar.junit.reportPaths", "$buildDir/testng-results"
+        // Ruta donde está el reporte de cobertura en XML (JaCoCo)
+        property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/test/unitTests/testng-results.xml"
     }
 }

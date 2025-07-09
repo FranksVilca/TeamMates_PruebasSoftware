@@ -1,0 +1,7 @@
+- name: SonarQube Scan
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  run: ./gradlew sonarqube \
+      -Dsonar.projectKey=tu_proyecto_key \
+      -Dsonar.host.url=https://sonarqube.tuempresa.com \
+      -Dsonar.login=$SONAR_TOKEN
