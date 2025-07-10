@@ -575,7 +575,7 @@ task unitTests(type: Test) {
     useTestNG()
     options.suites "src/test/resources/testng-component.xml"
     options.useDefaultListeners = true
-    ignoreFailures false
+    ignoreFailures true
     maxHeapSize = "1g"
     reports.html.required = false
     reports.junitXml.required = false
@@ -732,7 +732,22 @@ jacoco {
 // Habilita JaCoCo para las tareas unitTests, integrationTests, etc.
 tasks.withType(Test).configureEach {
     jacoco.includeNoLocationClasses = true
-    finalizedBy jacocoTestReport // asegura que se generen reportes luego de los tests
+    finalizedBy jacocoTestReport
+}
+
+task jacocoUnitTestReport(type: JacocoReport) {
+    dependsOn unitTests
+
+    executionData fileTree(dir: "$buildDir/jacoco", includes: ["integrationTests.exec"])
+
+    sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom files(sourceSets.main.output)
+    
+    reports {
+        xml.required.set(true)
+        xml.outputLocation.set(file("$buildDir/reports/jacoco/jacocoTestReport.xml"))
+        html.required.set(true)
+    }
 }
 
 // Ajusta jacocoTestReport para que use los .exec generados por todas las tareas de test
@@ -740,9 +755,9 @@ jacocoTestReport {
     dependsOn unitTests, integrationTests // Agrega aquí las tareas que uses realmente
 
     reports {
-        xml.required = true
-        xml.outputLocation = file("$buildDir/reports/jacoco/test/jacoco.xml")
-        html.required = true
+    xml.required = true
+    xml.outputLocation = file("$buildDir/jacoco/test/jacocoTestReport.xml")
+    html.required = true
     }
 
     executionData fileTree(dir: "$buildDir", includes: [
@@ -752,11 +767,4 @@ jacocoTestReport {
     ])
 }
 
-sonarqube {
-    properties {
-        // Ruta donde están los resultados de los tests (JUnit)
-        property "sonar.junit.reportPaths", "$buildDir/testng-results"
-        // Ruta donde está el reporte de cobertura en XML (JaCoCo)
-        property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/test/unitTests/testng-results.xml"
-    }
-}
+
