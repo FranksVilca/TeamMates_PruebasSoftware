@@ -783,7 +783,7 @@ jacocoTestCoverageVerification {
         }
     }
 }
-
+//
 // Asegurar que el reporte se ejecute después de las pruebas
 test {
     finalizedBy jacocoTestReport
