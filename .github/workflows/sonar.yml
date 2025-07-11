@@ -73,3 +73,28 @@ jobs:
           -Dsonar.organization=testsoftware
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+
+        - name: Start Docker daemon
+      run: |
+        sudo systemctl start docker
+        sudo docker info
+    
+    # Alternative: Use Docker buildx (recommended)
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Run unit tests
+      run: ./gradlew unitTests --continue
+    
+    - name: Run integration tests
+      run: ./gradlew integrationTests --continue
+    
+    - name: Generate test report
+      run: ./gradlew jacocoTestReport
+      if: always()
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: always()
+      with:
+        file: ./build/reports/jacoco/test/jacocoTestReport.xml
