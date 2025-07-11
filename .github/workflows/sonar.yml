@@ -74,7 +74,7 @@ jobs:
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
 
-        - name: Start Docker daemon
+    - name: Start Docker daemon
       run: |
         sudo systemctl start docker
         sudo docker info
