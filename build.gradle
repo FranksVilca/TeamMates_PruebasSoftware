@@ -737,7 +737,7 @@ tasks.withType(Test).configureEach {
 
 task jacocoUnitTestReport(type: JacocoReport) {
     dependsOn unitTests
-
+    dependsOn integrationTests
     executionData fileTree(dir: "$buildDir/jacoco", includes: ["integrationTests.exec"])
 
     sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
