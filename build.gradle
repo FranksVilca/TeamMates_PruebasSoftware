@@ -729,42 +729,70 @@ jacoco {
     toolVersion = jacocoVersion
 }
 
-// Habilita JaCoCo para las tareas unitTests, integrationTests, etc.
+// Configurar JaCoCo para todas las tareas de Test
 tasks.withType(Test).configureEach {
     jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+    maxParallelForks = 1
     finalizedBy jacocoTestReport
 }
 
-task jacocoUnitTestReport(type: JacocoReport) {
-    dependsOn unitTests
-    dependsOn integrationTests
-    executionData fileTree(dir: "$buildDir/jacoco", includes: ["integrationTests.exec"])
+// Configuración principal del reporte JaCoCo
+jacocoTestReport {
+    dependsOn unitTests, integrationTests
+    
+    reports {
+        xml.required = true
+        xml.outputLocation = file("$buildDir/reports/jacoco/test/jacocoTestReport.xml")
+        html.required = true
+        html.outputLocation = file("$buildDir/reports/jacoco/test/html")
+        csv.required = false
+    }
 
+    // Configurar los archivos de ejecución
+    executionData fileTree(dir: "$buildDir/jacoco", includes: [
+        "unitTests.exec",
+        "integrationTests.exec"
+    ])
+
+    // Configurar directorios de código fuente y clases
     sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
     classDirectories.setFrom files(sourceSets.main.output)
     
-    reports {
-        xml.required.set(true)
-        xml.outputLocation.set(file("$buildDir/reports/jacoco/jacocoTestReport.xml"))
-        html.required.set(true)
-    }
-}
-
-// Ajusta jacocoTestReport para que use los .exec generados por todas las tareas de test
-jacocoTestReport {
-    dependsOn unitTests, integrationTests // Agrega aquí las tareas que uses realmente
-
-    reports {
-    xml.required = true
-    xml.outputLocation = file("$buildDir/jacoco/test/jacocoTestReport.xml")
-    html.required = true
-    }
-
-    executionData fileTree(dir: "$buildDir", includes: [
-        "jacoco/test.exec",
-        "jacoco/unitTests.exec",
-        "jacoco/integrationTests.exec"
+    // Aplicar exclusiones si es necesario
+    classDirectories.setFrom files([
+        fileTree(dir: "$buildDir/classes/java/main", excludes: [
+            '**/Application.class',
+            '**/config/**',
+            '**/constants/**'
+        ])
     ])
 }
 
+// Remover la tarea jacocoUnitTestReport duplicada
+// task jacocoUnitTestReport... <- ELIMINAR ESTO
 
+// Verificación de cobertura (opcional)
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.0 // Ajusta según tus necesidades
+            }
+        }
+    }
+}
+
+// Asegurar que el reporte se ejecute después de las pruebas
+test {
+    finalizedBy jacocoTestReport
+}
+
+unitTests {
+    finalizedBy jacocoTestReport
+}
+
+integrationTests {
+    finalizedBy jacocoTestReport
+}
