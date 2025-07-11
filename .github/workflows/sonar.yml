@@ -60,7 +60,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          -Dsonar.projectKey=tu-teammates-project
-          -Dsonar.organization=tu-organizacion
+          -Dsonar.projectKey=TeamMates_PruebasSoftware 
+          -Dsonar.organization=TestSoftware
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
