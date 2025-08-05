@@ -1,97 +1,97 @@
-name: SonarQube Analysis
+# name: SonarQube Analysis
 
-on:
-  workflow_dispatch:
+# on:
+#   workflow_dispatch:
 
-jobs:
-  sonarqube:
-    runs-on: ubuntu-latest
+# jobs:
+#   sonarqube:
+#     runs-on: ubuntu-latest
     
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+#     steps:
+#     - uses: actions/checkout@v3
+#       with:
+#         fetch-depth: 0
     
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
+#     - name: Set up JDK 11
+#       uses: actions/setup-java@v3
+#       with:
+#         java-version: '11'
+#         distribution: 'temurin'
     
-    - name: Cache Gradle packages
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+#     - name: Cache Gradle packages
+#       uses: actions/cache@v3
+#       with:
+#         path: |
+#           ~/.gradle/caches
+#           ~/.gradle/wrapper
+#         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#         restore-keys: |
+#           ${{ runner.os }}-gradle-
     
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+#     - name: Grant execute permission for gradlew
+#       run: chmod +x gradlew
     
-    - name: Create configuration files
-      run: ./gradlew createConfigs
+#     - name: Create configuration files
+#       run: ./gradlew createConfigs
     
-    - name: Run unit tests with coverage
-      run: ./gradlew unitTests jacocoTestReport --info
+#     - name: Run unit tests with coverage
+#       run: ./gradlew unitTests jacocoTestReport --info
     
-    - name: Run integration tests with coverage
-      run: ./gradlew integrationTests --info
+#     - name: Run integration tests with coverage
+#       run: ./gradlew integrationTests --info
     
-    - name: Generate final coverage report
-      run: ./gradlew jacocoTestReport
+#     - name: Generate final coverage report
+#       run: ./gradlew jacocoTestReport
     
-    - name: List coverage files (debug)
-      run: |
-        echo "Contents of build/reports/jacoco/test/:"
-        ls -la build/reports/jacoco/test/ || echo "Directory not found"
-        echo "Contents of build/jacoco/:"
-        ls -la build/jacoco/ || echo "Directory not found"
+#     - name: List coverage files (debug)
+#       run: |
+#         echo "Contents of build/reports/jacoco/test/:"
+#         ls -la build/reports/jacoco/test/ || echo "Directory not found"
+#         echo "Contents of build/jacoco/:"
+#         ls -la build/jacoco/ || echo "Directory not found"
     
-    - name: Confirm coverage XML exists (optional check)
-      run: |
-        if [ -f build/reports/jacoco/test/jacocoTestReport.xml ]; then
-          echo "✔ Coverage XML found."
-        else
-          echo "❌ Coverage XML NOT found!"
-          exit 1
-        fi
+#     - name: Confirm coverage XML exists (optional check)
+#       run: |
+#         if [ -f build/reports/jacoco/test/jacocoTestReport.xml ]; then
+#           echo "✔ Coverage XML found."
+#         else
+#           echo "❌ Coverage XML NOT found!"
+#           exit 1
+#         fi
     
-    #- name: SonarCloud Scan
-    #  uses: SonarSource/sonarcloud-github-action@v2
-    #  env:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #  with:
-    #    args: >
-    #      -Dsonar.projectKey=FranksVilca_TeamMates_PruebasSoftware
-    #      -Dsonar.organization=testsoftware
-    #      -Dsonar.host.url=https://sonarcloud.io
-    #      -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+#     #- name: SonarCloud Scan
+#     #  uses: SonarSource/sonarcloud-github-action@v2
+#     #  env:
+#     #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#     #  with:
+#     #    args: >
+#     #      -Dsonar.projectKey=FranksVilca_TeamMates_PruebasSoftware
+#     #      -Dsonar.organization=testsoftware
+#     #      -Dsonar.host.url=https://sonarcloud.io
+#     #      -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
 
-    - name: Start Docker daemon
-      run: |
-        sudo systemctl start docker
-        sudo docker info
+#     - name: Start Docker daemon
+#       run: |
+#         sudo systemctl start docker
+#         sudo docker info
     
-    # Alternative: Use Docker buildx (recommended)
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+#     # Alternative: Use Docker buildx (recommended)
+#     - name: Set up Docker Buildx
+#       uses: docker/setup-buildx-action@v3
     
-    - name: Run unit tests
-      run: ./gradlew unitTests --continue
+#     - name: Run unit tests
+#       run: ./gradlew unitTests --continue
     
-    - name: Run integration tests
-      run: ./gradlew integrationTests --continue
+#     - name: Run integration tests
+#       run: ./gradlew integrationTests --continue
     
-    - name: Generate test report
-      run: ./gradlew jacocoTestReport
-      if: always()
+#     - name: Generate test report
+#       run: ./gradlew jacocoTestReport
+#       if: always()
     
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      if: always()
-      with:
-        file: ./build/reports/jacoco/test/jacocoTestReport.xml
+#     - name: Upload coverage reports
+#       uses: codecov/codecov-action@v3
+#       if: always()
+#       with:
+#         file: ./build/reports/jacoco/test/jacocoTestReport.xml
